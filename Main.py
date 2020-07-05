@@ -4,7 +4,7 @@ import glob
 import hashlib
 import math
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, time
 
 # ** Imgur API Documentation: https://apidocs.imgur.com/?version=latest **
 
@@ -22,6 +22,7 @@ ACCOUNT_NAME = 'onlyporridge'
 data_dir = os.getenv('LOCALAPPDATA') + '\\Imgur\\Duplicate Image Check\\data\\' + ACCOUNT_NAME + "\\"
 images_dir = data_dir + "images\\"
 images_data_filepath = data_dir + "images_data.json"
+upload_history_filepath = data_dir + "upload_history.csv"
 
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
@@ -90,6 +91,22 @@ def load_images_data():
 
 def save_images_data(images_data):
     open(images_data_filepath, 'w+').write(json.dumps(images_data))
+
+def save_upload_history(images_data):
+    with open(upload_history_filepath, 'w+') as hist_file:
+        hist_file.write("Id,Date,Time,Days From 1/1/2016,Seconds From Midnight\n")
+
+        start_date = date(2016,1,1)
+
+        for data in images_data:
+            current_date = datetime.fromtimestamp(data['datetime'], timezone.utc)
+            d = date(current_date.year, current_date.month, current_date.day)
+            t = time(current_date.hour, current_date.minute, current_date.second)
+
+            days_from_start = (d-start_date).days
+            seconds_from_midnight = t.second + 60 * t.minute + 3600 * t.hour
+
+            hist_file.write("{0},{1},{2},{3},{4}\n".format(data['id'], current_date.strftime("%m/%d/%Y"), current_date.strftime("%H:%M:%S"), days_from_start, seconds_from_midnight))
 
 def get_all_account_images_data(images_data):
     page_size = 50 # set by imgur
@@ -186,6 +203,7 @@ def compute_hashes_and_check(images_data):
 # ---
 # Main Program
 
+
 # load existing images data, if we have it
 images_data = load_images_data()
 
@@ -200,5 +218,8 @@ compute_hashes_and_check(images_data)
 
 # save updated images data back out
 save_images_data(images_data)
+
+# save out upload history spreadsheet
+#save_upload_history(images_data)
 
 os.system("pause")
