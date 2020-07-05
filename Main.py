@@ -19,7 +19,7 @@ if not os.path.isfile("client-id.txt"):
 CLIENT_ID = open("client-id.txt", "r").read()
 ACCOUNT_NAME = 'onlyporridge'
 
-data_dir = os.getcwd() + '\\data\\' + ACCOUNT_NAME + "\\"
+data_dir = os.getenv('LOCALAPPDATA') + '\\Imgur\\Duplicate Image Check\\data\\' + ACCOUNT_NAME + "\\"
 images_dir = data_dir + "images\\"
 images_data_filepath = data_dir + "images_data.json"
 
